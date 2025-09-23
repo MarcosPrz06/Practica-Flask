@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cliente de Escuderías</title>
+    <link rel="stylesheet" href="/static/estilos.css" />
+  </head>
+  <body>
+    <h1>Cliente de Escuderías</h1>
+    <nav>
+      <a href="/">Inicio</a>
+      <a href="/fanaticos">Fanáticos</a>
+      <a href="/administrativo">Administrativo</a>
+    </nav>
+
+    <section>
+      <h2>Registrar Escudería</h2>
+      <form id="form-team">
+        <input id="team-name" placeholder="Nombre" required />
+        <input id="team-country" placeholder="País" required />
+        <input id="team-titles" type="number" value="0" min="0" />
+        <button>Crear</button>
+      </form>
+      <div id="team-msg"></div>
+    </section>
+
+    <section>
+      <h2>Asociar Piloto</h2>
+      <form id="form-driver">
+        <input id="driver-name" placeholder="Nombre" required />
+        <input id="driver-country" placeholder="País" required />
+        <select id="driver-team" required></select>
+        <button>Agregar Piloto</button>
+      </form>
+      <div id="driver-msg"></div>
+    </section>
+
+    <section>
+      <h2>Estadísticas por Equipo</h2>
+      <button id="load-stats">Cargar Estadísticas</button>
+      <table id="stats-table">
+        <thead>
+          <tr>
+            <th>Equipo</th>
+            <th>País</th>
+            <th>Títulos</th>
+            <th>Puntos Totales</th>
+            <th># Pilotos</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <script>
+      const api = (path, options = {}) => fetch(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      }).then(r => r.json());
+
+      async function loadTeams() {
+        const teams = await api('/api/teams');
+        const select = document.getElementById('driver-team');
+        select.innerHTML = '';
+        teams.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = `${t.name} (${t.country})`;
+          select.appendChild(opt);
+        });
+      }
+
+      document.getElementById('form-team').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('team-name').value.trim();
+        const country = document.getElementById('team-country').value.trim();
+        const titles = parseInt(document.getElementById('team-titles').value || '0', 10);
+        const res = await api('/api/teams', { method: 'POST', body: JSON.stringify({ name, country, titles }) });
+        document.getElementById('team-msg').textContent = res.error ? res.error : `Creado: ${res.name}`;
+        await loadTeams();
+      });
+
+      document.getElementById('form-driver').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('driver-name').value.trim();
+        const country = document.getElementById('driver-country').value.trim();
+        const team_id = parseInt(document.getElementById('driver-team').value, 10);
+        const res = await api('/api/drivers', { method: 'POST', body: JSON.stringify({ name, country, team_id }) });
+        document.getElementById('driver-msg').textContent = res.error ? res.error : `Piloto agregado: ${res.name}`;
+      });
+
+      document.getElementById('load-stats').addEventListener('click', async () => {
+        const stats = await api('/api/team_stats');
+        const tbody = document.querySelector('#stats-table tbody');
+        tbody.innerHTML = '';
+        stats.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${s.name}</td><td>${s.country}</td><td>${s.titles}</td><td>${s.total_points}</td><td>${s.driver_count}</td>`;
+          tbody.appendChild(tr);
+        });
+      });
+
+      loadTeams();
+    </script>
+  </body>
+  </html>
+
+

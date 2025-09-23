@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cliente de Fanáticos</title>
+    <link rel="stylesheet" href="/static/estilos.css" />
+  </head>
+  <body>
+    <h1>Cliente de Fanáticos</h1>
+    <nav>
+      <a href="/">Inicio</a>
+      <a href="/escuderias">Escuderías</a>
+      <a href="/administrativo">Administrativo</a>
+    </nav>
+
+    <section>
+      <h2>Calendario de Carreras</h2>
+      <div>
+        <form id="form-race">
+          <input id="race-gp" placeholder="Gran Premio" required />
+          <input id="race-country" placeholder="País" required />
+          <input id="race-date" type="date" required />
+          <button>Agregar Carrera</button>
+        </form>
+      </div>
+      <ul id="race-list"></ul>
+    </section>
+
+    <section>
+      <h2>Ranking de Pilotos</h2>
+      <ol id="ranking-list"></ol>
+    </section>
+
+    <section>
+      <h2>Lista de Circuitos</h2>
+      <ul id="circuit-list"></ul>
+    </section>
+
+    <script>
+      const api = (path, options = {}) => fetch(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      }).then(r => r.json());
+
+      async function loadRaces() {
+        const races = await api('/api/races');
+        const list = document.getElementById('race-list');
+        list.innerHTML = '';
+        races.forEach(r => {
+          const li = document.createElement('li');
+          li.textContent = `${r.date} - ${r.grand_prix} (${r.country})`;
+          list.appendChild(li);
+        });
+      }
+
+      async function loadRanking() {
+        const ranking = await api('/api/ranking');
+        const list = document.getElementById('ranking-list');
+        list.innerHTML = '';
+        ranking.forEach((d, idx) => {
+          const li = document.createElement('li');
+          li.textContent = `#${idx + 1} ${d.name} - ${d.team_name} (${d.points} pts)`;
+          list.appendChild(li);
+        });
+      }
+
+      async function loadCircuits() {
+        const circuits = await api('/api/circuits');
+        const list = document.getElementById('circuit-list');
+        list.innerHTML = '';
+        circuits.forEach(c => {
+          const li = document.createElement('li');
+          li.textContent = `${c.name} (${c.country})`;
+          list.appendChild(li);
+        });
+      }
+
+      document.getElementById('form-race').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const grand_prix = document.getElementById('race-gp').value.trim();
+        const country = document.getElementById('race-country').value.trim();
+        const date = document.getElementById('race-date').value;
+        const res = await api('/api/races', { method: 'POST', body: JSON.stringify({ grand_prix, country, date }) });
+        alert(res.error ? res.error : `Carrera creada: ${res.grand_prix}`);
+        await loadRaces();
+      });
+
+      loadRaces();
+      loadRanking();
+      loadCircuits();
+    </script>
+  </body>
+  </html>
+
+

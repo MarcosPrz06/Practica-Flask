@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>F1 - Sistema de Gestión</title>
+    <link rel="stylesheet" href="/static/estilos.css" />
+  </head>
+  <body>
+    <h1>F1 - Sistema de Gestión</h1>
+    <nav>
+      <a href="/escuderias">Cliente de Escuderías</a>
+      <a href="/fanaticos">Cliente de Fanáticos</a>
+      <a href="/administrativo">Cliente Administrativo</a>
+    </nav>
+
+    <section>
+      <h2>Bienvenido</h2>
+      <p>
+        Pagina Oficial de la Fórmula 1, Proyecto liderado por el tirano Alan Uzal
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <a href="/escuderias"><button>Ir a Escuderías</button></a>
+        <a href="/fanaticos"><button>Ir a Fanáticos</button></a>
+        <a href="/administrativo"><button>Ir a Administrativo</button></a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Registro</h2>
+      <div id="quick-stats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:12px;">
+        <div class="card">
+          <strong>Equipos registrados</strong>
+          <div id="stat-teams">-</div>
+        </div>
+        <div class="card">
+          <strong>Pilotos registrados</strong>
+          <div id="stat-drivers">-</div>
+        </div>
+        <div class="card">
+          <strong>Carreras cargadas</strong>
+          <div id="stat-races">-</div>
+        </div>
+        <div class="card">
+          <strong>Top 1 del ranking</strong>
+          <div id="stat-top">-</div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      async function fetchJSON(url){
+        const r = await fetch(url);
+        return await r.json();
+      }
+      async function loadQuickStats(){
+        try {
+          const [teams, drivers, races, ranking] = await Promise.all([
+            fetchJSON('/api/teams'),
+            fetchJSON('/api/drivers'),
+            fetchJSON('/api/races'),
+            fetchJSON('/api/ranking')
+          ]);
+          document.getElementById('stat-teams').textContent = teams.length;
+          document.getElementById('stat-drivers').textContent = drivers.length;
+          document.getElementById('stat-races').textContent = races.length;
+          document.getElementById('stat-top').textContent = ranking.length ? `${ranking[0].name} (${ranking[0].team_name}) - ${ranking[0].points} pts` : '-';
+        } catch(err) {
+          document.getElementById('stat-teams').textContent = '-';
+          document.getElementById('stat-drivers').textContent = '-';
+          document.getElementById('stat-races').textContent = '-';
+          document.getElementById('stat-top').textContent = '-';
+        }
+      }
+      loadQuickStats();
+    </script>
+  </body>
+  </html>
+
+

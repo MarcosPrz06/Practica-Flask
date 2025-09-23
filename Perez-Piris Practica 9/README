@@ -1,0 +1,40 @@
+Trabajo Integrador: Sistema de gestión digital
+La organización de la Fórmula 1 quiere modernizar su sistema de gestión
+digital para equipos, pilotos y carreras. El objetivo es implementar una aplicación
+distribuida que permita a distintos tipos de usuarios acceder a la información en
+tiempo real, con un servidor backend centralizado que gestione la lógica de negocio
+y la persistencia en una base de datos.
+La base de datos deberá almacenar información sobre pilotos (nombre, país,
+escudería, puntos acumulados), escuderías (nombre, país, cantidad de títulos, lista
+de pilotos asociados) y carreras (Gran Premio, fecha, país, pilotos participantes y
+sus resultados).
+El sistema debe seguir un modelo en capas para garantizar modularidad y
+escalabilidad:
+• Capa de Presentación: compuesta por tres clientes distintos, cada uno con
+una interfaz gráfica intuitiva y visualmente llamativa.
+o Un cliente de escuderías, que permita registrar nuevas escuderías,
+asociar pilotos y consultar estadísticas de la temporada.
+o Un cliente de fanáticos, que muestre el calendario de carreras, los
+resultados más recientes y el ranking de pilotos mediante botones y
+gráficos atractivos.
+o Un cliente administrativo, encargado de cargar resultados de las
+carreras, validar datos y generar reportes oficiales.
+
+• Capa de Aplicación (Backend): implementada como una API REST que
+reciba las peticiones de los clientes. Debe exponer endpoints para
+operaciones CRUD sobre pilotos, escuderías y carreras. Además, incluir
+reglas de negocio, como impedir registrar un piloto sin asociarlo a una
+escudería, evitar duplicar resultados de una misma carrera o actualizar
+automáticamente los puntos de los pilotos según las posiciones obtenidas.
+• Capa de Datos: compuesta por la base de datos relacional que almacena
+toda la información de la Fórmula 1. El backend será responsable de la
+interacción con esta base de datos, devolviendo siempre respuestas
+serializadas en formato JSON a los clientes.
+
+Cada cliente se comunicará únicamente con el backend a través de
+peticiones HTTP, sin acceder directamente a la base de datos. El backend será el
+encargado de validar y procesar la información.
+Asimismo, se debe hacer una prueba con peticiones de 3 clientes en
+simultaneo. Para esto usar 3 archivos clientes que recreen esta simulación y ver si
+se realiza una correcta gestión de las peticiones y persistencia de datos.
+

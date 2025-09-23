@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cliente Administrativo</title>
+    <link rel="stylesheet" href="/static/estilos.css" />
+  </head>
+  <body>
+    <h1>Cliente Administrativo</h1>
+    <nav>
+      <a href="/">Inicio</a>
+      <a href="/escuderias">Escuderías</a>
+      <a href="/fanaticos">Fanáticos</a>
+    </nav>
+
+    <section>
+      <h2>Cargar Resultado de Carrera</h2>
+      <form id="form-result">
+        <select id="result-race" required></select>
+        <select id="result-driver" required></select>
+        <input id="result-position" type="number" min="1" placeholder="Posición" required />
+        <button>Guardar Resultado</button>
+      </form>
+      <div id="result-msg"></div>
+    </section>
+
+    <section>
+      <h2>Resultados Recientes</h2>
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Gran Premio</th>
+            <th>Posición</th>
+            <th>Piloto</th>
+            <th>Equipo</th>
+            <th>Puntos</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <script>
+      const api = (path, options = {}) => fetch(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      }).then(r => r.json());
+
+      async function loadRaces() {
+        const races = await api('/api/races');
+        const select = document.getElementById('result-race');
+        select.innerHTML = '';
+        races.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = `${r.date} - ${r.grand_prix}`;
+          select.appendChild(opt);
+        });
+      }
+
+      async function loadDrivers() {
+        const drivers = await api('/api/drivers');
+        const select = document.getElementById('result-driver');
+        select.innerHTML = '';
+        drivers.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.id;
+          opt.textContent = `${d.name} (${d.team_name})`;
+          select.appendChild(opt);
+        });
+      }
+
+      async function loadResults() {
+        const results = await api('/api/race_results');
+        const tbody = document.querySelector('#results-table tbody');
+        tbody.innerHTML = '';
+        results.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${r.date}</td><td>${r.grand_prix}</td><td>${r.position}</td><td>${r.driver_name}</td><td>${r.team_name}</td><td>${r.points_awarded}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('form-result').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const race_id = parseInt(document.getElementById('result-race').value, 10);
+        const driver_id = parseInt(document.getElementById('result-driver').value, 10);
+        const position = parseInt(document.getElementById('result-position').value, 10);
+        const res = await api('/api/race_results', { method: 'POST', body: JSON.stringify({ race_id, driver_id, position }) });
+        document.getElementById('result-msg').textContent = res.error ? res.error : 'Resultado guardado';
+        await loadResults();
+      });
+
+      loadRaces();
+      loadDrivers();
+      loadResults();
+    </script>
+  </body>
+  </html>
+
+
